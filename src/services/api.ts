@@ -78,3 +78,22 @@ export const fetchUserProfile = async () => {
     }
   };
 };
+
+export interface CreatePostInput {
+  title: string;
+  content: string;
+}
+
+export const createPost = async (input: CreatePostInput): Promise<Post> => {
+  await new Promise((resolve) => setTimeout(resolve, 800));
+  return {
+    id: Math.random().toString(36).substring(2, 11),
+    title: input.title,
+    author: 'Usuário Teste',
+    createdAt: new Date().toISOString(),
+    contentSummary: input.content,
+    likesCount: 0,
+    commentsCount: 0,
+    isRemoved: false,
+  };
+};
