@@ -1,4 +1,4 @@
-import { Box, Flex, Heading, Text, Badge, Grid, Tabs, TabList, TabPanels, Tab, TabPanel, Spinner } from '@chakra-ui/react';
+import { Box, Flex, Heading, Text, Badge, Grid, Tabs, TabList, TabPanels, Tab, TabPanel, Spinner, useColorModeValue } from '@chakra-ui/react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchUserProfile } from '../services/api';
 import StatBox from '../components/StatBox';
@@ -17,15 +17,23 @@ const Profile = () => {
     );
   }
 
+  const profileBg = useColorModeValue('white', 'gray.800');
+  const tabPanelsBg = useColorModeValue('white', 'gray.800');
+  const borderColor = useColorModeValue('gray.200', 'gray.700');
+
   return (
     <Box>
       {/* Cabeçalho do Perfil */}
-      <Box bg="white" p={6} borderRadius="lg" shadow="sm" mb={6}>
-        <Flex align="center" gap={4} mb={2}>
-          <Heading size="lg">{user.name}</Heading>
-          {user.isAdmin && <Badge colorScheme="red" fontSize="0.8em">Admin</Badge>}
+      <Box bg={profileBg} p={6} borderRadius="lg" shadow="sm" mb={6}>
+        <Flex justify="space-between" align="center">
+          <Box>
+            <Flex align="center" gap={4} mb={2}>
+              <Heading size="lg">{user.name}</Heading>
+              {user.isAdmin && <Badge colorScheme="red" fontSize="0.8em">Admin</Badge>}
+            </Flex>
+            <Text color="gray.500">{user.email}</Text>
+          </Box>
         </Flex>
-        <Text color="gray.500">{user.email}</Text>
       </Box>
 
       {/* Estatísticas */}
@@ -44,7 +52,7 @@ const Profile = () => {
           <Tab>Curtidas</Tab>
         </TabList>
 
-        <TabPanels bg="white" border="1px solid" borderColor="gray.200" borderTop="none" borderBottomRadius="lg">
+        <TabPanels bg={tabPanelsBg} border="1px solid" borderColor={borderColor} borderTop="none" borderBottomRadius="lg">
           <TabPanel p={8}>
             <Text color="gray.500" textAlign="center">Nenhum post ainda</Text>
           </TabPanel>

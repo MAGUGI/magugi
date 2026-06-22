@@ -34,7 +34,6 @@ const Feed = () => {
     <Box>
       <Flex justify="space-between" align="center" mb={6}>
         <Heading size="lg">Feed Geral</Heading>
-        <Button colorScheme="blue" size="md">+ Novo Post</Button>
       </Flex>
 
       {data?.pages.map((group, i) => (

@@ -1,4 +1,4 @@
-import { Card, CardBody, CardFooter, Text, Flex, Avatar, Badge, IconButton, Box, Heading } from '@chakra-ui/react';
+import { Card, CardBody, CardFooter, Text, Flex, Avatar, Badge, IconButton, Box, Heading, useColorModeValue } from '@chakra-ui/react';
 import { FiHeart, FiMessageCircle } from 'react-icons/fi';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -23,8 +23,13 @@ const PostCard = ({ post }: PostCardProps) => {
     locale: ptBR,
   });
 
+  const cardBg = useColorModeValue('white', 'gray.800');
+  const titleColor = useColorModeValue('gray.800', 'gray.100');
+  const contentColor = useColorModeValue('gray.600', 'gray.300');
+  const removedColor = useColorModeValue('gray.400', 'gray.500');
+
   return (
-    <Card mb={4} bg="white">
+    <Card mb={4} bg={cardBg}>
       <CardBody>
         {post.isRemoved && (
           <Badge colorScheme="red" mb={3} p={1} borderRadius="md">
@@ -51,10 +56,10 @@ const PostCard = ({ post }: PostCardProps) => {
               <Text fontSize="sm" fontWeight="bold">{post.author}</Text>
               <Text fontSize="xs" color="gray.500">• {relativeTime}</Text>
             </Flex>
-            <Heading size="md" mb={2} color={post.isRemoved ? 'gray.400' : 'gray.800'}>
+            <Heading size="md" mb={2} color={post.isRemoved ? removedColor : titleColor}>
               {post.title}
             </Heading>
-            <Text color={post.isRemoved ? 'gray.400' : 'gray.600'} noOfLines={3}>
+            <Text color={post.isRemoved ? removedColor : contentColor} noOfLines={3}>
               {post.contentSummary}
             </Text>
           </Box>

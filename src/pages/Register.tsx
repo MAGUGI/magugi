@@ -1,4 +1,4 @@
-import { Box, Button, Flex, FormControl, FormLabel, Heading, Input, Text, Link } from '@chakra-ui/react';
+import { Box, Button, Flex, FormControl, FormLabel, Heading, Input, Text, Link, useColorModeValue } from '@chakra-ui/react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
@@ -14,12 +14,17 @@ const Register = () => {
     navigate('/login');
   };
 
+  const bg = useColorModeValue('gray.50', 'gray.900');
+  const cardBg = useColorModeValue('white', 'gray.800');
+  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const headingColor = useColorModeValue('blue.600', 'blue.400');
+
   return (
-    <Flex minH="100vh" align="center" justify="center" bg="gray.50" px={4}>
-      <Box w="full" maxW="md" bg="white" p={8} borderRadius="lg" boxShadow="md">
+    <Flex minH="100vh" align="center" justify="center" bg={bg} px={4}>
+      <Box w="full" maxW="md" bg={cardBg} p={8} borderRadius="lg" boxShadow="md">
         <Box textAlign="center" mb={6}>
-          <Heading size="xl" color="blue.600" mb={2}>Cadastro MAGUGI</Heading>
-          <Text color="gray.500">Crie sua conta para participar da comunidade</Text>
+          <Heading size="xl" color={headingColor} mb={2}>Cadastro MAGUGI</Heading>
+          <Text color={textColor}>Crie sua conta para participar da comunidade</Text>
         </Box>
 
         <form onSubmit={handleRegister}>
