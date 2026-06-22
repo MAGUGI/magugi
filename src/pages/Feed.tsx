@@ -2,6 +2,7 @@ import { Box, Button, Flex, Heading, Spinner, Text } from '@chakra-ui/react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { fetchPosts } from '../services/api';
 import PostCard from '../components/PostCard';
+import { Link as RouterLink } from 'react-router-dom';
 
 const Feed = () => {
   const {
@@ -34,6 +35,9 @@ const Feed = () => {
     <Box>
       <Flex justify="space-between" align="center" mb={6}>
         <Heading size="lg">Feed Geral</Heading>
+        <Button as={RouterLink} to="/criar-post" colorScheme="blue" size="md">
+          + Novo Post
+        </Button>
       </Flex>
 
       {data?.pages.map((group, i) => (
