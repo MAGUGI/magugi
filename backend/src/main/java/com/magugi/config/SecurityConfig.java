@@ -17,7 +17,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         //Adicionar rotas para liberar aqui ->
                         .requestMatchers(HttpMethod.POST, "/users").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/users").permitAll()
                         .requestMatchers(HttpMethod.GET, "/test").permitAll()
                         .anyRequest().authenticated()
                 );

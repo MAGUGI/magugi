@@ -23,6 +23,7 @@ public class UsuarioService {
     }
 
     public Usuario save(Usuario usuario) {
+        usuario.setIsAdmin(false);
         String senhaPlana = usuario.getPasswordHash();
         String senhaCriptografada = passwordEncoder.encode(senhaPlana);
         usuario.setPasswordHash(senhaCriptografada);

@@ -1,14 +1,23 @@
 # MAGUGI API — Documentação das Rotas
 
+API REST de um fórum (estilo Reddit), construída com Spring Boot 3 e Spring Data JPA.
+
+## Visão geral
+
+- **Base URL:** `http://localhost:8080`
+- **Formato:** JSON (request e response)
+- **Identificadores:** todos os recursos usam `UUID`
+- **Autenticação:** Spring Security (HTTP Basic). Apenas as rotas listadas como _Públicas_ abaixo são abertas; todas as demais exigem autenticação.
+- **Paginação:** endpoints que retornam `Page<T>` aceitam os parâmetros de query padrão do Spring: `page` (índice baseado em 0), `size` e `sort` (ex.: `?page=0&size=20&sort=createdAt,desc`).
+
 ### Rotas públicas (sem autenticação)
 
 | Método | Rota     |
 |--------|----------|
 | POST   | `/users` |
-| GET    | `/users` |
 | GET    | `/test`  |
 
-Qualquer outra rota retorna `401 Unauthorized` se a requisição não estiver autenticada.
+Qualquer outra rota retorna `401 Unauthorized` se a requisição não estiver autenticada. **`GET /users` agora exige autenticação** (antes era público, o que vazava emails e hashes de senha de todos os usuários).
 
 ---
 
@@ -27,8 +36,8 @@ Verifica se a API está no ar.
 ### `GET /users`
 Lista todos os usuários.
 
-- **Auth:** pública
-- **Resposta:** `200 OK` — `List<Usuario>`
+- **Auth:** autenticada
+- **Resposta:** `200 OK` — `List<Usuario>` (sem `email` nem `passwordHash`, que são write-only)
 
 ### `POST /users`
 Cria um novo usuário. A senha enviada em `passwordHash` é criptografada com BCrypt antes de persistir.
@@ -40,14 +49,16 @@ Cria um novo usuário. A senha enviada em `passwordHash` é criptografada com BC
 {
   "username": "joao",
   "email": "joao@email.com",
-  "passwordHash": "senhaEmTextoPlano",
-  "isAdmin": false
+  "passwordHash": "senhaEmTextoPlano"
 }
 ```
 
-- **Resposta:** `200 OK` — `Usuario` criado (com `id`, `createdAt`, `updatedAt`)
+- **Resposta:** `200 OK` — `Usuario` criado (com `id`, `createdAt`, `updatedAt`; sem `email`/`passwordHash` na resposta)
 
-> **Nota:** o campo `passwordHash` recebe a senha em texto plano no momento da criação o serviço aplica o hash. Na resposta ele já vem criptografado.
+> **Notas de segurança:**
+> - O campo `passwordHash` recebe a senha em texto plano apenas na criação; o serviço aplica o hash BCrypt. Ele é write-only, então nunca aparece em respostas.
+> - `email` também é write-only — aceito no cadastro, mas omitido das respostas (dado pessoal / LGPD).
+> - `isAdmin` é **ignorado** se enviado no body: o serviço força `false` na criação, impedindo escalação de privilégio. A promoção a admin deve ser feita por outro fluxo controlado.
 
 ---
 
@@ -294,6 +305,6 @@ Remove um ban (revoga o banimento).
 
 ## Notas técnicas
 
-- **Tratamento de erros:** recursos não encontrados lançam `RuntimeException`, o que resulta em `500 Internal Server Error`.
+- **Tratamento de erros:** recursos não encontrados lançam `RuntimeException`, o que resulta em `500 Internal Server Error`. Recomenda-se futuramente adicionar um `@RestControllerAdvice` para mapear esses casos para `404 Not Found`.
 - **Relacionamentos:** ao enviar relacionamentos no body, basta informar o objeto aninhado com seu `id` (ex.: `"user": { "id": "..." }`).
 - **Timestamps:** `createdAt` e `updatedAt` são gerenciados automaticamente pelo Hibernate e não devem ser enviados no body.

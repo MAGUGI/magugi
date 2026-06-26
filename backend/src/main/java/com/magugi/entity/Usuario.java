@@ -1,5 +1,6 @@
 package com.magugi.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -25,9 +26,11 @@ public class Usuario {
     private String username;
 
     @Column(nullable = false, unique = true)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String email;
 
     @Column(name = "password_hash", nullable = false)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String passwordHash;
 
     @Column(name = "is_admin")
