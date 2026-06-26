@@ -1,69 +1,149 @@
-import { Box, Flex, Heading, Text, Badge, Grid, Tabs, TabList, TabPanels, Tab, TabPanel, Spinner, useColorModeValue } from '@chakra-ui/react';
+import {
+  Avatar,
+  Badge,
+  Box,
+  Center,
+  Divider,
+  Flex,
+  Heading,
+  Icon,
+  Spinner,
+  Stat,
+  StatLabel,
+  StatNumber,
+  Text,
+} from '@chakra-ui/react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchUserProfile } from '../services/api';
-import StatBox from '../components/StatBox';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { MdCalendarToday, MdOutlineArticle, MdPerson, MdShield } from 'react-icons/md';
+import { useParams } from 'react-router-dom';
+import { userService } from '../services/api';
+import { useAuthStore } from '../store/authStore';
 
 const Profile = () => {
-  const { data: user, isLoading } = useQuery({
-    queryKey: ['userProfile'],
-    queryFn: fetchUserProfile,
+  const { userId } = useParams<{ userId?: string }>();
+  const currentUser = useAuthStore((s) => s.user);
+  const targetId = userId || currentUser?.id;
+
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ['user', targetId],
+    queryFn: () => userService.getById(targetId!).then((r) => r.data),
+    enabled: !!targetId,
   });
 
-  if (isLoading || !user) {
+  if (isLoading) {
     return (
-      <Flex justify="center" mt={10}>
-        <Spinner size="xl" color="blue.500" />
-      </Flex>
+      <Center py={20}>
+        <Spinner size="xl" color="orange.400" thickness="4px" />
+      </Center>
     );
   }
 
-  const profileBg = useColorModeValue('white', 'gray.800');
-  const tabPanelsBg = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  if (!profile) {
+    return <Center py={20}><Text color="red.400">Utilizador não encontrado.</Text></Center>;
+  }
+
+  const isOwnProfile = currentUser?.id === profile.id;
 
   return (
-    <Box>
-      {/* Cabeçalho do Perfil */}
-      <Box bg={profileBg} p={6} borderRadius="lg" shadow="sm" mb={6}>
-        <Flex justify="space-between" align="center">
-          <Box>
-            <Flex align="center" gap={4} mb={2}>
-              <Heading size="lg">{user.name}</Heading>
-              {user.isAdmin && <Badge colorScheme="red" fontSize="0.8em">Admin</Badge>}
-            </Flex>
-            <Text color="gray.500">{user.email}</Text>
-          </Box>
-        </Flex>
+    <Box maxW="2xl" mx="auto">
+      {/* Card de Perfil */}
+      <Box
+        bg="gray.800"
+        border="1px solid"
+        borderColor="gray.700"
+        borderRadius="2xl"
+        overflow="hidden"
+        mb={6}
+      >
+        {/* Banner */}
+        <Box h={24} bgGradient="linear(to-r, orange.900, gray.800)" />
+
+        <Box px={6} pb={6}>
+          <Flex align="end" gap={4} mt={-8} mb={4}>
+            <Avatar
+              size="xl"
+              name={profile.username}
+              bg="orange.500"
+              color="white"
+              border="4px solid"
+              borderColor="gray.800"
+              fontSize="2xl"
+            />
+            <Box>
+              <Flex align="center" gap={2} flexWrap="wrap">
+                <Heading size="lg" color="white">{profile.username}</Heading>
+                {profile.isAdmin && (
+                  <Badge colorScheme="red" variant="solid" borderRadius="full" px={2}>
+                    <Flex align="center" gap={1}>
+                      <Icon as={MdShield} boxSize={3} />
+                      Admin
+                    </Flex>
+                  </Badge>
+                )}
+                {isOwnProfile && (
+                  <Badge colorScheme="blue" variant="outline" borderRadius="full" fontSize="xs">
+                    Tu
+                  </Badge>
+                )}
+              </Flex>
+              <Text fontSize="sm" color="gray.500">
+                <Icon as={MdCalendarToday} mr={1} />
+                Membro desde{' '}
+                {format(new Date(profile.createdAt), "MMMM 'de' yyyy", { locale: ptBR })}
+              </Text>
+            </Box>
+          </Flex>
+
+          <Divider borderColor="gray.700" mb={4} />
+
+          {/* Estatísticas */}
+          <Flex gap={6} flexWrap="wrap">
+            <Stat>
+              <StatLabel color="gray.500" fontSize="xs">
+                <Flex align="center" gap={1}>
+                  <Icon as={MdOutlineArticle} />
+                  Publicações
+                </Flex>
+              </StatLabel>
+              <StatNumber color="white" fontSize="2xl">—</StatNumber>
+            </Stat>
+            <Stat>
+              <StatLabel color="gray.500" fontSize="xs">
+                <Flex align="center" gap={1}>
+                  <Icon as={MdPerson} />
+                  Tipo de conta
+                </Flex>
+              </StatLabel>
+              <StatNumber fontSize="lg" color={profile.isAdmin ? 'red.400' : 'orange.400'}>
+                {profile.isAdmin ? 'Administrador' : 'Utilizador Comum'}
+              </StatNumber>
+            </Stat>
+          </Flex>
+        </Box>
       </Box>
 
-      {/* Estatísticas */}
-      <Grid templateColumns={{ base: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }} gap={4} mb={8}>
-        <StatBox label="Posts" value={user.stats.posts} />
-        <StatBox label="Comentários" value={user.stats.comments} />
-        <StatBox label="Curtidas" value={user.stats.likes} />
-        <StatBox label="Banimentos" value={user.stats.bans} />
-      </Grid>
-
-      {/* Tabs */}
-      <Tabs colorScheme="blue" variant="enclosed">
-        <TabList>
-          <Tab>Posts</Tab>
-          <Tab>Comentários</Tab>
-          <Tab>Curtidas</Tab>
-        </TabList>
-
-        <TabPanels bg={tabPanelsBg} border="1px solid" borderColor={borderColor} borderTop="none" borderBottomRadius="lg">
-          <TabPanel p={8}>
-            <Text color="gray.500" textAlign="center">Nenhum post ainda</Text>
-          </TabPanel>
-          <TabPanel p={8}>
-            <Text color="gray.500" textAlign="center">Nenhum comentário ainda</Text>
-          </TabPanel>
-          <TabPanel p={8}>
-            <Text color="gray.500" textAlign="center">Nenhuma curtida ainda</Text>
-          </TabPanel>
-        </TabPanels>
-      </Tabs>
+      {/* Email (só visível para o próprio ou admin) */}
+      {(isOwnProfile || currentUser?.isAdmin) && (
+        <Box
+          bg="gray.800"
+          border="1px solid"
+          borderColor="gray.700"
+          borderRadius="xl"
+          p={4}
+        >
+          <Text fontSize="xs" color="gray.500" mb={1} textTransform="uppercase" letterSpacing="wide">
+            Email (privado)
+          </Text>
+          <Text color="gray.300" fontFamily="mono">
+            {profile.email || '—'}
+          </Text>
+          <Text fontSize="xs" color="gray.600" mt={1}>
+            Este email não é visível para outros utilizadores (LGPD)
+          </Text>
+        </Box>
+      )}
     </Box>
   );
 };
