@@ -1,9 +1,9 @@
 package com.magugi.controller;
 
 import com.magugi.entity.Ban;
-import com.magugi.service.BanService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.magugi.repository.BanRepository;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,42 +13,24 @@ import java.util.UUID;
 @RequestMapping("/bans")
 public class BanController {
 
-    private final BanService service;
+    private final BanRepository banRepository;
 
-    public BanController(BanService service) {
-        this.service = service;
-    }
-
-    @GetMapping("/{id}")
-    public Ban findById(@PathVariable UUID id) {
-        return service.findById(id);
+    public BanController(BanRepository banRepository) {
+        this.banRepository = banRepository;
     }
 
     @GetMapping("/user/{userId}")
-    public List<Ban> findByUser(@PathVariable UUID userId) {
-        return service.findByUser(userId);
-    }
-
-    @GetMapping("/forum/{forumId}")
-    public Page<Ban> findByForum(@PathVariable UUID forumId,
-                                 Pageable pageable) {
-        return service.findByForum(forumId, pageable);
+    public List<Ban> findByUserId(@PathVariable UUID userId) {
+        return banRepository.findByUserId(userId);
     }
 
     @PostMapping
-    public Ban create(@RequestBody Ban ban) {
-        return service.save(ban);
-    }
-
-    @PutMapping("/{id}")
-    public Ban update(@PathVariable UUID id,
-                      @RequestBody Ban ban) {
-        ban.setId(id);
-        return service.save(ban);
-    }
-
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable UUID id) {
-        service.delete(id);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> createBan(@RequestBody Ban ban) {
+        Ban savedBan = banRepository.save(ban);
+        
+        System.out.println("[AUDITORIA] - Nova penalidade aplicada. ID do Ban: " + savedBan.getId() + " | Motivo: " + savedBan.getReason());
+        
+        return ResponseEntity.ok(savedBan);
     }
 }
