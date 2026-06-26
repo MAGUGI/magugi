@@ -4,9 +4,9 @@ import Header from './Header';
 
 const Layout = () => {
   return (
-    <Box minH="100vh">
+    <Box minH="100vh" bg="gray.950">
       <Header />
-      <Container maxW="container.md" py={8}>
+      <Container maxW="1200px" py={6} px={{ base: 3, md: 6 }}>
         <Outlet />
       </Container>
     </Box>

@@ -41,3 +41,50 @@ A arquitetura do banco reflete o seguinte ecossistema de entidades principais:
 * **Postagens e Comentários:** O conteúdo em si, com rastreamento de autoria, comunidade de destino e comentários aninhados (parentes).
 * **Likes:** Tabela documentando as curtidas.
 * **Bans:** Registro histórico de penalidades (locais ou globais), contendo o motivo e a data de expiração.
+
+---
+
+## 🚀 Como Executar o Projeto Localmente
+
+O projecto está configurado para arrancar de forma simples usando os scripts `.bat` na raiz.
+
+### Pré-requisitos
+- **Java 25** (JDK) — Necessário estar no `PATH`
+- **PostgreSQL 18** — A correr na porta padrão (5432) com utilizador `postgres` e senha `postgres`, base de dados `magugi`
+- **Node.js** (v20+) — Para o front-end
+
+### 1. Iniciar o Back-end
+Pode usar o script automático que configura o Java e liberta a porta:
+```powershell
+.\start-backend.bat
+```
+Ou manualmente no terminal (na pasta `C:\Code\magugi-backend\backend`):
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
+### 2. Iniciar o Front-end
+Num terminal separado, na pasta `C:\Code\magugi`:
+```powershell
+npm run dev
+```
+Acede a **http://localhost:5173**.
+
+---
+
+## 🔑 Credenciais de Teste
+
+Para efeitos de demonstração e avaliação, as seguintes credenciais estão disponíveis (o back-end encarrega-se de criar o `admin` no arranque):
+
+| Perfil | Username | Password | Notas |
+|---|---|---|---|
+| **Administrador** | `admin` | `123456` | Acesso ao Painel Admin, pode banir e apagar qualquer post/comentário. |
+| **Utilizador Comum** | `comum` | `123456` | Pode criar fóruns, posts, comentar e gerir o próprio conteúdo. |
+
+*(Ao criar um novo fórum sendo um Utilizador Comum, tornas-te automaticamente **Moderador** desse fórum, ganhando permissões para apagar posts de terceiros dentro desse espaço).*
+
+---
+
+## 🛡️ Relatório de Segurança
+
+Os controlos de cibersegurança implementados (exigidos pelos critérios 8 a 15) encontram-se documentados detalhadamente no ficheiro [**RELATORIO_SEGURANCA.md**](./RELATORIO_SEGURANCA.md).
