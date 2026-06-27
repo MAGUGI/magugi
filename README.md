@@ -54,17 +54,13 @@ O projecto está configurado para arrancar de forma simples usando os scripts `.
 - **Node.js** (v20+) — Para o front-end
 
 ### 1. Iniciar o Back-end
-Pode usar o script automático que configura o Java e liberta a porta:
+No terminal na raiz do projecto (`C:\Code\magugi`), corre o comando (isto vai entrar na pasta backend e iniciar o Spring Boot):
 ```powershell
-.\start-backend.bat
-```
-Ou manualmente no terminal (na pasta `C:\Code\magugi-backend\backend`):
-```powershell
-.\mvnw.cmd spring-boot:run
+npm run backend
 ```
 
 ### 2. Iniciar o Front-end
-Num terminal separado, na pasta `C:\Code\magugi`:
+Num terminal separado, também na raiz (`C:\Code\magugi`), corre:
 ```powershell
 npm run dev
 ```
