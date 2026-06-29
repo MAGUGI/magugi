@@ -29,6 +29,12 @@ public class PostagemController {
         return service.findByForum(forumId, pageable);
     }
 
+    @GetMapping("/user/{userId}")
+    public Page<Postagem> findByUser(@PathVariable UUID userId,
+                                     Pageable pageable) {
+        return service.findByUser(userId, pageable);
+    }
+
     @PostMapping
     public Postagem create(@RequestBody Postagem postagem) {
         return service.save(postagem);

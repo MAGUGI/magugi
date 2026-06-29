@@ -29,18 +29,19 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { MdDelete, MdEdit, MdReply, MdThumbUp } from 'react-icons/md';
 import { Link as RouterLink, useParams, useNavigate } from 'react-router-dom';
-import { comentarioService, likeService, postService } from '../services/api';
+import { comentarioService, forumService, likeService, postService } from '../services/api';
 import { useAuthStore } from '../store/authStore';
 
 // ─── Componente de Comentário ──────────────────────────────────────────────────
 
-const CommentCard = ({ comment, postId }: { comment: any; postId: string }) => {
+const CommentCard = ({ comment, postId, canModerate }: { comment: any; postId: string; canModerate: boolean }) => {
   const user = useAuthStore((s) => s.user);
   const queryClient = useQueryClient();
   const [replyText, setReplyText] = useState('');
   const [showReply, setShowReply] = useState(false);
   const isOwner = user?.id === comment.user?.id;
   const isAdmin = user?.isAdmin;
+  const canDelete = isOwner || isAdmin || canModerate;
 
   const deleteMutation = useMutation({
     mutationFn: () => comentarioService.delete(comment.id),
@@ -95,8 +96,8 @@ const CommentCard = ({ comment, postId }: { comment: any; postId: string }) => {
           )}
         </HStack>
 
-        {/* Acções condicionais — só dono ou admin (Req. #8) */}
-        {(isOwner || isAdmin) && (
+        {/* Acções condicionais — dono, admin ou moderador do fórum */}
+        {canDelete && (
           <HStack spacing={1}>
             <IconButton
               aria-label="Apagar comentário"
@@ -182,6 +183,12 @@ const PostDetail = () => {
     enabled: !!postId,
   });
 
+  const { data: forum } = useQuery({
+    queryKey: ['forum', post?.forum?.id],
+    queryFn: () => forumService.getById(post!.forum!.id).then((r) => r.data),
+    enabled: !!post?.forum?.id,
+  });
+
   const { data: commentsData, isLoading: commentsLoading } = useQuery({
     queryKey: ['comments', postId],
     queryFn: () => comentarioService.getByPost(postId!, 0, 100).then((r) => r.data),
@@ -190,6 +197,8 @@ const PostDetail = () => {
 
   const isOwner = user?.id === post?.user?.id;
   const isAdmin = user?.isAdmin;
+  const isForumModerator = user?.id === forum?.createdBy?.id;
+  const canModerate = isAdmin || isForumModerator;
 
   const deleteMutation = useMutation({
     mutationFn: () => postService.delete(postId!),
@@ -263,7 +272,7 @@ const PostDetail = () => {
           </Button>
 
           {/* Botões de editar/apagar — só dono ou admin (Req. #8) */}
-          {(isOwner || isAdmin) && (
+          {(isOwner || canModerate) && (
             <>
               <Button
                 size="sm"
@@ -317,7 +326,7 @@ const PostDetail = () => {
 
       <VStack spacing={3} align="stretch">
         {comments.map((c) => (
-          <CommentCard key={c.id} comment={c} postId={postId!} />
+          <CommentCard key={c.id} comment={c} postId={postId!} canModerate={canModerate} />
         ))}
       </VStack>
 

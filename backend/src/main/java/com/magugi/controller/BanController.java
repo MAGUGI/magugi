@@ -2,6 +2,8 @@ package com.magugi.controller;
 
 import com.magugi.entity.Ban;
 import com.magugi.repository.BanRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +24,11 @@ public class BanController {
     @GetMapping("/user/{userId}")
     public List<Ban> findByUserId(@PathVariable UUID userId) {
         return banRepository.findByUserId(userId);
+    }
+
+    @GetMapping("/forum/{forumId}")
+    public Page<Ban> findByForumId(@PathVariable UUID forumId, Pageable pageable) {
+        return banRepository.findByForumId(forumId, pageable);
     }
 
     @PostMapping

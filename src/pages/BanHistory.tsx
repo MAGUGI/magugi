@@ -22,14 +22,19 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { MdBlock, MdHistory } from 'react-icons/md';
 import { useParams, Link as RouterLink } from 'react-router-dom';
-import { banService, Ban, PageResponse } from '../services/api';
+import { banService, Ban, forumService, PageResponse } from '../services/api';
 import { useAuthStore } from '../store/authStore';
 
 const BanHistory = () => {
   const { forumId, userId } = useParams<{ forumId?: string; userId?: string }>();
   const user = useAuthStore((s) => s.user);
 
-  // getByForum retorna PageResponse<Ban>, getByUser retorna Ban[]
+  const { data: forum } = useQuery({
+    queryKey: ['forum', forumId],
+    queryFn: () => forumService.getById(forumId!).then((r) => r.data),
+    enabled: !!forumId,
+  });
+
   const { data: forumBans, isLoading: forumLoading, isError: forumError } = useQuery({
     queryKey: ['bans', 'forum', forumId],
     queryFn: () => banService.getByForum(forumId!).then((r) => r.data),
@@ -42,17 +47,30 @@ const BanHistory = () => {
     enabled: !!userId && !forumId,
   });
 
+  const isForumOwner = user?.id === forum?.createdBy?.id;
+  const canViewForumBans = user?.isAdmin || isForumOwner;
+  const canViewUserBans = user?.isAdmin;
+
   const isLoading = forumLoading || userLoading;
   const isError   = forumError || userError;
   const bans: Ban[] = forumId
     ? (forumBans as PageResponse<Ban> | undefined)?.content ?? []
     : (userBans as Ban[] | undefined) ?? [];
 
-  if (!user?.isAdmin) {
+  if (forumId && !canViewForumBans) {
     return (
       <Alert status="error" borderRadius="xl">
         <AlertIcon />
-        Acesso negado. Apenas administradores podem ver o histórico de bans.
+        Acesso negado. Apenas o moderador deste fórum ou administradores podem ver o histórico.
+      </Alert>
+    );
+  }
+
+  if (userId && !forumId && !canViewUserBans) {
+    return (
+      <Alert status="error" borderRadius="xl">
+        <AlertIcon />
+        Acesso negado. Apenas administradores podem ver o histórico de bans de utilizadores.
       </Alert>
     );
   }
@@ -66,7 +84,7 @@ const BanHistory = () => {
         <Box>
           <Heading size="lg" color="white">Histórico de Bans</Heading>
           <Text color="gray.400" fontSize="sm">
-            {forumId ? 'Bans neste fórum' : 'Bans deste utilizador'}
+            {forumId ? 'Bans neste fórum (apenas consulta)' : 'Bans deste utilizador'}
           </Text>
         </Box>
       </Flex>

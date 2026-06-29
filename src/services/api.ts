@@ -55,14 +55,14 @@ export interface Forum {
   description: string;
   isPrivate: boolean;
   isQuarantined: boolean;
-  createdBy: { id: string; username: string };
+  createdBy?: { id: string; username: string };
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
 }
 
 export interface Postagem {
   id: string;
-  forum: { id: string; name: string };
+  forum: { id: string; name: string; createdBy?: { id: string; username: string } };
   user: { id: string; username: string };
   title: string;
   body?: string;
@@ -199,6 +199,11 @@ export const postService = {
 
   getByForum: (forumId: string, page = 0, size = 20) =>
     api.get<PageResponse<Postagem>>(`/posts/forum/${forumId}`, {
+      params: { page, size, sort: 'createdAt,desc' },
+    }),
+
+  getByUser: (userId: string, page = 0, size = 20) =>
+    api.get<PageResponse<Postagem>>(`/posts/user/${userId}`, {
       params: { page, size, sort: 'createdAt,desc' },
     }),
 

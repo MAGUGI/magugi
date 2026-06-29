@@ -12,13 +12,14 @@ import {
   StatLabel,
   StatNumber,
   Text,
+  VStack,
 } from '@chakra-ui/react';
 import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { MdCalendarToday, MdOutlineArticle, MdPerson, MdShield } from 'react-icons/md';
-import { useParams } from 'react-router-dom';
-import { userService } from '../services/api';
+import { Link as RouterLink, useParams } from 'react-router-dom';
+import { postService, userService } from '../services/api';
 import { useAuthStore } from '../store/authStore';
 
 const Profile = () => {
@@ -29,6 +30,12 @@ const Profile = () => {
   const { data: profile, isLoading } = useQuery({
     queryKey: ['user', targetId],
     queryFn: () => userService.getById(targetId!).then((r) => r.data),
+    enabled: !!targetId,
+  });
+
+  const { data: postsData, isLoading: postsLoading } = useQuery({
+    queryKey: ['posts', 'user', targetId],
+    queryFn: () => postService.getByUser(targetId!, 0, 50).then((r) => r.data),
     enabled: !!targetId,
   });
 
@@ -45,6 +52,7 @@ const Profile = () => {
   }
 
   const isOwnProfile = currentUser?.id === profile.id;
+  const posts = postsData?.content ?? [];
 
   return (
     <Box maxW="2xl" mx="auto">
@@ -107,7 +115,7 @@ const Profile = () => {
                   Publicações
                 </Flex>
               </StatLabel>
-              <StatNumber color="white" fontSize="2xl">—</StatNumber>
+              <StatNumber color="white" fontSize="2xl">{postsData?.totalElements ?? 0}</StatNumber>
             </Stat>
             <Stat>
               <StatLabel color="gray.500" fontSize="xs">
@@ -132,6 +140,7 @@ const Profile = () => {
           borderColor="gray.700"
           borderRadius="xl"
           p={4}
+          mb={6}
         >
           <Text fontSize="xs" color="gray.500" mb={1} textTransform="uppercase" letterSpacing="wide">
             Email (privado)
@@ -144,6 +153,57 @@ const Profile = () => {
           </Text>
         </Box>
       )}
+
+      {/* Publicações do utilizador */}
+      <Heading size="md" color="gray.300" mb={4} display="flex" alignItems="center" gap={2}>
+        <Icon as={MdOutlineArticle} />
+        Publicações
+      </Heading>
+
+      {postsLoading && (
+        <Center py={10}>
+          <Spinner color="orange.400" />
+        </Center>
+      )}
+
+      {!postsLoading && posts.length === 0 && (
+        <Center py={12}>
+          <Text color="gray.500">Este utilizador ainda não criou publicações.</Text>
+        </Center>
+      )}
+
+      <VStack spacing={3} align="stretch">
+        {posts.map((post) => (
+          <Box
+            key={post.id}
+            bg="gray.800"
+            border="1px solid"
+            borderColor="gray.700"
+            borderRadius="xl"
+            p={4}
+            _hover={{ borderColor: 'gray.600' }}
+          >
+            <Text
+              as={RouterLink}
+              to={`/posts/${post.id}`}
+              fontWeight="semibold"
+              color="white"
+              _hover={{ color: 'orange.400' }}
+            >
+              {post.title}
+            </Text>
+            {post.body && (
+              <Text color="gray.400" fontSize="sm" noOfLines={2} mt={1}>
+                {post.body}
+              </Text>
+            )}
+            <Text fontSize="xs" color="gray.500" mt={2}>
+              f/{post.forum?.name} ·{' '}
+              {formatDistanceToNow(new Date(post.createdAt), { locale: ptBR, addSuffix: true })}
+            </Text>
+          </Box>
+        ))}
+      </VStack>
     </Box>
   );
 };
